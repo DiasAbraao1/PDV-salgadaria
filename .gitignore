@@ -1,0 +1,18 @@
+node_modules/
+
+# Banco de dados
+database/db.js
+*.db
+*.sqlite
+*.sqlite3
+
+# Build Electron
+dist/
+out/
+
+# Variáveis de ambiente
+.env
+
+# Sistema
+.DS_Store
+Thumbs.db

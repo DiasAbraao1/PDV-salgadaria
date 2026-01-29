@@ -1,0 +1,13 @@
+{
+  "name": "a-salgadaria",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^40.0.0",
+    "better-sqlite3": "^12.6.2",
+    "sqlite3": "^5.1.7"
+  }
+}
