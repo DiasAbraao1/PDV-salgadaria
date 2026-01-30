@@ -1,1 +1,1 @@
-console.log(window.api.teste());
+window.api.adicionarProduto('Coxinha', 8);
