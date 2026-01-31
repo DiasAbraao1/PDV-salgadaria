@@ -56,5 +56,5 @@ app.whenReady().then(() => {
         }
     });
 
-    win.loadFile(path.join(__dirname, 'src/pages/index.html'));
+    win.loadFile(path.join(__dirname, 'src/index.html'));
 });

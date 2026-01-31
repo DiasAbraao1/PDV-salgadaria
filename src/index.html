@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDV</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="css/style-home.css">
+</head>
+<body>
+    
+    <nav id="sidebar" class="sidebar">
+        <div id="sidebar-content">
+            <div id="user">
+                <img src="img/user.avif" id="user-avatar">
+                <p id="user-infos">
+                    <span class="item-description">
+                        Fulano de tal
+                    </span>
+                    <span class="item-description">
+                        ciclano de talis
+                    </span>
+                </p>
+            </div>
+            <ul id="side-items">
+                <li class="side-item active" data-page="pedidos">
+                    <a href="#">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span class="item-description">
+                            Pedidos
+                        </span>
+                    </a>
+                </li>
+                <li class="side-item" data-page="dashboard">
+                    <a href="#">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span class="item-description">
+                            dashboard
+                        </span>
+                    </a>
+                </li>
+                <li class="side-item" data-page="historico">
+                    <a href="#">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span class="item-description">
+                            Historico
+                        </span>
+                    </a>
+                </li>
+                <li class="side-item" data-page="produtos">
+                    <a href="#" onclick="loadPage('produtos')" return false>
+                        <i class="fa-solid fa-box"></i>
+                        <span class="item-description">
+                            Produtos
+                        </span>
+                    </a>
+                </li>
+                <!-- <li class="side-item" data-page="imagens">
+                    <a href="#">
+                        <i class="fa-solid fa-image"></i>
+                        <span class="item-description">
+                            Imagens
+                        </span>
+                    </a>
+                </li>
+                <li class="side-item" data-page="config">
+                    <a href="#">
+                        <i class="fa-solid fa-gear"></i>
+                        <span class="item-description">
+                            config
+                        </span>
+                    </a>
+                </li> -->
+            </ul>
+
+            <button id="open-btn">
+                <i id="open-btn-icon" class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+        <div id="logout-btn">
+            <i class="fa-solid fa-right-from-bracket"></i>
+            <span class="item-description">
+                Logout
+            </span>
+        </div>
+       
+    </nav>
+
+    <div id="content"></div>
+
+
+    <script src="js/renderer.js"></script>
+</body>
+</html>
