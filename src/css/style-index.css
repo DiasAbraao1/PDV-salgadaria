@@ -164,3 +164,15 @@ main {
     justify-content: flex-start;
     gap: 14px;
 }
+
+/*=============== styles home ==========*/
+
+
+
+#pedidos-left {
+    flex: 1;
+}
+
+#pedidos-right {
+    flex: 1;
+}

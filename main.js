@@ -1,7 +1,9 @@
-const { app,  BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
-const { ipcMain } = require('electron')
-const db = require('./database/db')
+const db = require('./database/db');
+
+let mainWindow;
+let vendaWindow;
 
 ipcMain.handle('adicionar-produto', (event, nome, preco) => {
   db.run(
@@ -45,16 +47,71 @@ ipcMain.handle('editar-produto', (event, {id, campo, valor}) => {
     })
 })
 
-app.whenReady().then(() => { 
-    const win = new BrowserWindow({
-        width: 1000,
-        height: 700,
-        webPreferences: {
-            preload: path.join(__dirname, 'preload.js'),
-            sandbox: false,
-            contextIsolation: true
-        }
+ipcMain.handle('listar-produto', () => {
+  return new Promise((resolve, reject) => {
+    db.all("SELECT * FROM produtos", (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
     });
+  });
+});
 
-    win.loadFile(path.join(__dirname, 'src/index.html'));
+app.whenReady().then(() => { 
+  mainWindow = new BrowserWindow({
+    width: 1000,
+    height: 700,
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      sandbox: false,
+      contextIsolation: true
+    }
+  });
+
+  mainWindow.loadFile(path.join(__dirname, 'src/index.html'));
+});
+
+
+function criarJanelaVenda(total) {
+  if (vendaWindow) {
+    vendaWindow.focus();
+    return;
+  }
+
+  vendaWindow = new BrowserWindow({
+    width: 400,
+    height: 500,
+
+    minWidth: 400,
+    minHeight: 500,
+    maxWidth: 400,
+    maxHeight: 500,
+
+    resizable: false, // trava o redimensionamento
+    parent: mainWindow,
+    modal: true,
+
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      sandbox: false,
+      contextIsolation: true
+    }
+  });
+
+  vendaWindow.totalCompra = total;
+
+  vendaWindow.loadFile(path.join(__dirname, 'src/venda.html'));
+
+  vendaWindow.on('closed', () => {
+    vendaWindow = null;
+  });
+}
+
+
+ipcMain.handle('abrir-janela-venda', (event, total) => {
+  criarJanelaVenda(total);
+});
+
+ipcMain.handle("get-total-compra", () => {
+  if (!vendaWindow) return 0;
+  return Number(vendaWindow.totalCompra) || 0;
 });

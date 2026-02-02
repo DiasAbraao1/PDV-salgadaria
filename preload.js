@@ -1,5 +1,4 @@
 const { contextBridge, ipcRenderer } = require('electron');
-const path = require('path');
 
 contextBridge.exposeInMainWorld('api', {
     adicionarProduto: (nome, preco) => {
@@ -12,5 +11,17 @@ contextBridge.exposeInMainWorld('api', {
 
     editarProduto: (dados) => {
         ipcRenderer.invoke('editar-produto', dados)
+    },
+
+    listarProduto: () => {
+        return ipcRenderer.invoke('listar-produto')
+    },
+
+    // ============= FUNÇÕES DA NOVA JANELA DE VENDA ============ //
+
+    abrirJanelaVenda: (total) => ipcRenderer.invoke("abrir-janela-venda", total),
+
+    totalCompra: () => {
+        return ipcRenderer.invoke('get-total-compra');
     },
 });
