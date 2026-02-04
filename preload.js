@@ -24,4 +24,12 @@ contextBridge.exposeInMainWorld('api', {
     totalCompra: () => {
         return ipcRenderer.invoke('get-total-compra');
     },
+
+    adicionarPedido: (total, forma_pagamento, data) => {
+        ipcRenderer.invoke('adicionar-pedido', total, forma_pagamento, data)
+    },
+
+    fecharJanelaPedido: () => {
+        ipcRenderer.invoke('fechar-janela-pedido');
+    }
 });

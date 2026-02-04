@@ -148,6 +148,11 @@ document.addEventListener("DOMContentLoaded", () => {
 document.addEventListener("click", (e) => {
   if (e.target.id === "btnVender") {
     const total = calcularTotal();
-    window.api.abrirJanelaVenda(total);
+    if(total !== 0.00) {
+      window.api.abrirJanelaVenda(total);
+    } else {
+      alert("Tu vai vender nada seu caralho?");
+    }
+    
   }
 });

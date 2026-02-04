@@ -115,3 +115,23 @@ ipcMain.handle("get-total-compra", () => {
   if (!vendaWindow) return 0;
   return Number(vendaWindow.totalCompra) || 0;
 });
+
+ipcMain.handle('adicionar-pedido', (event, total, forma_pagamento, data) => {
+  db.run(
+    'INSERT INTO pedidos (total, forma_pagamento, criado_em) VALUES (?, ?, ?)',
+    [total, forma_pagamento, data],
+    function (err) {
+      if (err) {
+        console.error('Erro ao inserir:', err.message);
+      } else {
+        console.log('Pedido salvo com ID:', this.lastID);
+      }
+    }
+  );
+});
+
+ipcMain.handle('fechar-janela-pedido', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.close();
+})
+

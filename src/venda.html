@@ -10,13 +10,23 @@
     <div id="total-venda"></div>
 
     <p>Desconto:</p>
-    <input type="number"><br>
+    <input type="number" id="desconto" placeholder="Desconto"><br><br>
 
 
-    <button id="dinheiro">Bufunfa</button>
-    <button id="debito">é de infiar</button>
-    <button id="credito">é de infiar2</button>
-    <button id="pix">pix</button>
+    <p>Selecione a forma de pagamento:</p>
+    <select id="forma-pagamento">
+        <option value="">Selecione</option>
+        <option value="dinheiro">Dinheiro</option>
+        <option value="credito">Crédito</option>
+        <option value="debito">Débito</option>
+        <option value="pix">Pix</option>
+        <option value="outro">Outro</option>
+    </select>
+
+
+    <br><br>
+
+    <button id="btnConfirmar">Fechar pedido</button>
 
     <script src="./js/venda.js"></script>
 </body>

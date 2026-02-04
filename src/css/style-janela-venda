@@ -4,3 +4,7 @@ html, body {
   margin: 0;
   overflow: hidden; /* 🔥 mata a barra */
 }
+
+#btnConfirmar {
+  cursor: pointer;
+}
