@@ -1,0 +1,39 @@
+.pedido {
+  display: grid;
+  grid-template-columns: 60px 140px 120px 110px 110px 110px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.pedido:hover {
+  background: #f4f4f4;
+}
+
+.desconto {
+  color: #d9534f;
+}
+
+.total {
+  font-weight: bold;
+}
+
+.itens-pedido {
+  margin: 6px 0 10px 15px;
+  padding: 6px 10px;
+  border-left: 3px solid #3b82f6;
+  background: #111;
+  border-radius: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item-linha {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #ddd;
+}
+

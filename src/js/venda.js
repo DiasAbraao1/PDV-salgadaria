@@ -37,9 +37,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const desconto = Number(inputDesconto.value) || 0;
     const totalFinal = Math.max(totalOriginal - desconto, 0);
 
-    window.api.adicionarPedido(totalFinal, forma_pagamento, data);
-    window.api.fecharJanelaPedido(); 
+    window.api.adicionarPedido(desconto, totalFinal, forma_pagamento, data);
 
+    alert('Pedido feito com sucesso!');
+
+    console.log(desconto, totalFinal, forma_pagamento, data);
+    window.api.fecharJanelaPedido(); 
   });
 });
 

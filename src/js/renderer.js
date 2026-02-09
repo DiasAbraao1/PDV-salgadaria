@@ -1,10 +1,4 @@
-// window.api.adicionarProduto('Coxinha', 200);
-// window.api.apagarProduto(2);
-// window.api.editarProduto({
-//     id: 3,
-//     campo: "nome",
-//     valor: "joelho"
-// });
+// ===================== Index - pedidos ======================== //
 
 document.getElementById('open-btn').addEventListener('click', function(){
     document.getElementById('sidebar').classList.toggle('open-sidebar');
@@ -20,6 +14,8 @@ function loadPage(page) {
         renderizarProdutos();
         renderizarPedido();
         renderizarTotal();
+      } else if (page === "historico") {
+        carregarHistorico();
       }
     });
 }
@@ -137,11 +133,17 @@ function renderizarTotal() {
   span.textContent = `Total: R$ ${total.toFixed(2)}`;
 }
 
+window.api.pedidoFinalizado(() => {
+  pedidoAtual = [];
+  renderizarPedido();
+  renderizarTotal();
+  carregarHistorico();
+});
 
 document.addEventListener("DOMContentLoaded", () => {
   window.api.listarProduto().then(produtos => {
     produtosCache = produtos;
-    renderizarProdutos(); // se já estiver em pedidos
+    renderizarProdutos(); 
   });
 });
 
@@ -149,10 +151,89 @@ document.addEventListener("click", (e) => {
   if (e.target.id === "btnVender") {
     const total = calcularTotal();
     if(total !== 0.00) {
-      window.api.abrirJanelaVenda(total);
+      window.api.abrirJanelaVenda({
+        total,
+        itens: pedidoAtual
+      });
     } else {
-      alert("Tu vai vender nada seu caralho?");
+      alert("Escolha algum prduto!");
     }
     
   }
 });
+
+
+// ====================== HISTORICO ============================= //
+
+
+function renderizarHistorico() {
+  const list = document.getElementById("lista-pedidos");
+  if (!list) return;
+
+  list.innerHTML = "";
+
+  listaPedidos.forEach(p => {
+    const div = document.createElement("div");
+    div.classList.add("pedido");
+
+    div.innerHTML = `
+      <span class="id">#${p.id}</span>
+      <span class="data">${formatarData(p.criado_em)}</span>
+      <span class="pagamento">${p.forma_pagamento}</span>
+      <span class="bruto">R$ ${Number(p.total_bruto).toFixed(2)}</span>
+      <span class="desconto">- R$ ${Number(p.desconto).toFixed(2)}</span>
+      <span class="total">R$ ${Number(p.total).toFixed(2)}</span>
+    `;
+
+    div.addEventListener("click", async () => {
+      const jaAberto = div.nextElementSibling?.classList.contains("itens-pedido");
+
+      // se já estiver aberto, fecha
+      if (jaAberto) {
+        div.nextElementSibling.remove();
+        return;
+      }
+
+      const itens = await window.api.listarItensPedido(p.id);
+
+      const itensDiv = document.createElement("div");
+      itensDiv.classList.add("itens-pedido");
+
+      itens.forEach(i => {
+        const linha = document.createElement("div");
+        linha.classList.add("item-linha");
+        linha.innerHTML = `
+          <span>${i.nome}</span>
+          <span>R$ ${Number(i.preco_unitario).toFixed(2)}</span>
+        `;
+        itensDiv.appendChild(linha);
+      });
+
+      div.after(itensDiv);
+    });
+
+
+    list.appendChild(div);
+  });
+}
+
+
+function abrirDetalhesPedido(pedidoId) {
+  window.api.listarItensPedido(pedidoId).then(itens => {
+    console.table(itens);
+  });
+}
+
+function formatarData(data) {
+  return new Date(data).toLocaleString("pt-BR");
+}
+
+let listaPedidos = [];
+
+function carregarHistorico() {
+  window.api.listarPedido().then(pedidos => {
+    listaPedidos = pedidos;
+    renderizarHistorico();
+  });
+}
+

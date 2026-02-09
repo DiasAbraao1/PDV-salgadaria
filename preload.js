@@ -25,11 +25,23 @@ contextBridge.exposeInMainWorld('api', {
         return ipcRenderer.invoke('get-total-compra');
     },
 
-    adicionarPedido: (total, forma_pagamento, data) => {
-        ipcRenderer.invoke('adicionar-pedido', total, forma_pagamento, data)
+    adicionarPedido: (desconto, total, forma_pagamento, data) => {
+        ipcRenderer.invoke('adicionar-pedido',desconto, total, forma_pagamento, data)
     },
 
     fecharJanelaPedido: () => {
         ipcRenderer.invoke('fechar-janela-pedido');
+    },
+
+    pedidoFinalizado: (callback) => {
+        ipcRenderer.on('pedido-finalizado', callback);
+    },
+
+    listarPedido: () => {
+        return ipcRenderer.invoke('listar-pedido');
+    },
+
+    listarItensPedido: (id) => {
+        return ipcRenderer.invoke('listar-itens-pedido', id)
     }
 });

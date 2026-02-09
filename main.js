@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const db = require('./database/db');
+const { eventNames } = require('process');
 
 let mainWindow;
 let vendaWindow;
@@ -68,10 +69,12 @@ app.whenReady().then(() => {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'src/index.html'));
+
+
 });
 
 
-function criarJanelaVenda(total) {
+function criarJanelaVenda(pedido) {
   if (vendaWindow) {
     vendaWindow.focus();
     return;
@@ -97,41 +100,98 @@ function criarJanelaVenda(total) {
     }
   });
 
-  vendaWindow.totalCompra = total;
+  vendaWindow.pedido = pedido;
 
   vendaWindow.loadFile(path.join(__dirname, 'src/venda.html'));
 
   vendaWindow.on('closed', () => {
     vendaWindow = null;
+    mainWindow.webContents.send("pedido-finalizado");
   });
 }
 
 
-ipcMain.handle('abrir-janela-venda', (event, total) => {
-  criarJanelaVenda(total);
+ipcMain.handle('abrir-janela-venda', (event, pedido) => {
+  criarJanelaVenda(pedido);
 });
 
 ipcMain.handle("get-total-compra", () => {
-  if (!vendaWindow) return 0;
-  return Number(vendaWindow.totalCompra) || 0;
+  if (!vendaWindow || !vendaWindow.pedido) return 0;
+  return Number(vendaWindow.pedido.total) || 0;
 });
 
-ipcMain.handle('adicionar-pedido', (event, total, forma_pagamento, data) => {
-  db.run(
-    'INSERT INTO pedidos (total, forma_pagamento, criado_em) VALUES (?, ?, ?)',
-    [total, forma_pagamento, data],
-    function (err) {
-      if (err) {
-        console.error('Erro ao inserir:', err.message);
-      } else {
-        console.log('Pedido salvo com ID:', this.lastID);
-      }
+
+ipcMain.handle('adicionar-pedido', (event, desconto, totalFinal, forma_pagamento, data) => {
+  return new Promise((resolve, reject) => {
+
+    if (!vendaWindow || !vendaWindow.pedido) {
+      return reject("Pedido inexistente");
     }
-  );
+
+    const { total, itens } = vendaWindow.pedido;
+
+    db.run(
+      `INSERT INTO pedidos
+       (total_bruto, desconto, total, forma_pagamento, criado_em)
+       VALUES (?, ?, ?, ?, ?)`,
+      [total, desconto, totalFinal, forma_pagamento, data],
+      function (err) {
+        if (err) return reject(err);
+
+        const pedidoId = this.lastID;
+
+        const stmt = db.prepare(`
+          INSERT INTO pedidos_itens
+          (pedido_id, produto_id, preco_unitario)
+          VALUES (?, ?, ?)
+        `);
+
+        itens.forEach(item => {
+          stmt.run(pedidoId, item.id, item.preco);
+        });
+
+        stmt.finalize();
+
+        // avisa o renderer que finalizou
+        mainWindow.webContents.send("pedido-finalizado");
+
+        resolve(pedidoId);
+      }
+    );
+  });
 });
+
 
 ipcMain.handle('fechar-janela-pedido', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.close();
 })
 
+
+ipcMain.handle('listar-pedido', () => {
+  return new Promise((resolve, reject) => {
+    db.all(
+      "SELECT * FROM pedidos ORDER BY id DESC",
+      (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      }
+    );
+  });
+});
+
+
+
+ipcMain.handle('listar-itens-pedido', (event, pedidoId) => {
+  return new Promise((resolve, reject) => {
+    db.all(`
+      SELECT p.nome, pi.preco_unitario
+      FROM pedidos_itens pi
+      JOIN produtos p ON p.id = pi.produto_id
+      WHERE pi.pedido_id = ?
+    `, [pedidoId], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+});
