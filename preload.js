@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, ipcMain } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
     adicionarProduto: (nome, preco) => {
@@ -43,5 +43,23 @@ contextBridge.exposeInMainWorld('api', {
 
     listarItensPedido: (id) => {
         return ipcRenderer.invoke('listar-itens-pedido', id)
-    }
+    },
+
+    // ============== JANELA DE PRODUTOS ============
+
+    abrirJanelaProduto: () => {
+        ipcRenderer.invoke('abrir-janela-produto');
+    },
+
+    fecharJanelaProduto: () => {
+        ipcRenderer.invoke('fechar-janela-produto');
+    },
+
+    produtoAdicionado: (callback) => {
+        ipcRenderer.on('produto-adicionado', callback);
+    },
+
+    produtoApagado: (callback) => {
+        ipcRenderer.on('produto-apagado', callback);
+    },
 });

@@ -16,6 +16,8 @@ function loadPage(page) {
         renderizarTotal();
       } else if (page === "historico") {
         carregarHistorico();
+      } else if (page === "produtos") {
+        renderizarListaProdutos();
       }
     });
 }
@@ -143,7 +145,8 @@ window.api.pedidoFinalizado(() => {
 document.addEventListener("DOMContentLoaded", () => {
   window.api.listarProduto().then(produtos => {
     produtosCache = produtos;
-    renderizarProdutos(); 
+    renderizarProdutos();
+    renderizarListaProdutos();
   });
 });
 
@@ -163,7 +166,7 @@ document.addEventListener("click", (e) => {
 });
 
 
-// ====================== HISTORICO ============================= //
+// ====================================== HISTORICO =============================================== //
 
 
 function renderizarHistorico() {
@@ -188,7 +191,6 @@ function renderizarHistorico() {
     div.addEventListener("click", async () => {
       const jaAberto = div.nextElementSibling?.classList.contains("itens-pedido");
 
-      // se já estiver aberto, fecha
       if (jaAberto) {
         div.nextElementSibling.remove();
         return;
@@ -203,7 +205,7 @@ function renderizarHistorico() {
         const linha = document.createElement("div");
         linha.classList.add("item-linha");
         linha.innerHTML = `
-          <span>${i.nome}</span>
+          <span>${i.nome} </span>
           <span>R$ ${Number(i.preco_unitario).toFixed(2)}</span>
         `;
         itensDiv.appendChild(linha);
@@ -237,3 +239,65 @@ function carregarHistorico() {
   });
 }
 
+
+
+
+// ============================ Produtos ===================================================//
+
+function renderizarListaProdutos() {
+  const lista = document.getElementById("lista-produtos");
+  if (!lista) return;
+
+  lista.innerHTML = "";
+
+  produtosCache.forEach(p => {
+    const div = document.createElement("div");
+    div.classList.add("produto");
+
+    const nome = document.createElement("span");
+    nome.textContent = p.nome;
+
+    const preco = document.createElement("span");
+    preco.textContent = `R$ ${Number(p.preco).toFixed(2)}`;
+    preco.classList.add("preco");
+
+    const btnRemover = document.createElement("button");
+    btnRemover.innerHTML = '<i class="fa-solid fa-trash"></i>';
+    btnRemover.classList.add("btn-remover");
+    btnRemover.dataset.id = p.id;
+
+    div.appendChild(nome);
+    div.appendChild(preco);
+    div.appendChild(btnRemover);
+
+    lista.appendChild(div);
+  });
+}
+
+document.addEventListener("click", (e) => {
+  if (e.target.id === "btnNovoProduto") {
+    window.api.abrirJanelaProduto();
+  }
+
+  const btn = e.target.closest(".btn-remover");
+  if (btn) {
+    const id = btn.dataset.id;
+    window.api.apagarProduto(Number(id));
+  }
+});
+
+window.api.produtoAdicionado(() => {
+  window.api.listarProduto().then(produtos => {
+    produtosCache = produtos;
+    renderizarProdutos();
+    renderizarListaProdutos();
+  });
+});
+
+window.api.produtoApagado(() => {
+  window.api.listarProduto().then(produtos => {
+    produtosCache = produtos;
+    renderizarProdutos();
+    renderizarListaProdutos();
+  });
+});

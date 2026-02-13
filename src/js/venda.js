@@ -40,8 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.api.adicionarPedido(desconto, totalFinal, forma_pagamento, data);
 
     alert('Pedido feito com sucesso!');
-
-    console.log(desconto, totalFinal, forma_pagamento, data);
+    
     window.api.fecharJanelaPedido(); 
   });
 });

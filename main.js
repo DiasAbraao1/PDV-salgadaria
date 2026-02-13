@@ -5,6 +5,7 @@ const { eventNames } = require('process');
 
 let mainWindow;
 let vendaWindow;
+let produtoWindow;
 
 ipcMain.handle('adicionar-produto', (event, nome, preco) => {
   db.run(
@@ -15,23 +16,27 @@ ipcMain.handle('adicionar-produto', (event, nome, preco) => {
         console.error('Erro ao inserir:', err.message);
       } else {
         console.log('Produto salvo com ID:', this.lastID);
+        mainWindow.webContents.send("produto-adicionado");
       }
     }
   );
+
+  
 });
 
 ipcMain.handle('apagar-produto', (event, id) => {
+  return new Promise((resolve, reject) => {
     db.run(
-        `DELETE FROM produtos WHERE id = ?`, [id],
-        function(err) {
-            if(err) {
-                console.log('Erro ao deletar produto!', err.message);
-            } else {
-                console.log('Produto  deletado!', this.changes)
-            }
-        }
-    )
-})
+      `UPDATE produtos SET ativo = 0 WHERE id = ?`,
+      [id],
+      err => {
+        if (err) reject(err);
+        else resolve(true);
+      }
+    );
+    mainWindow.webContents.send("produto-apagado");
+  });
+});
 
 ipcMain.handle('editar-produto', (event, {id, campo, valor}) => {
     if(!["nome", "preco"].includes(campo)) {
@@ -50,7 +55,7 @@ ipcMain.handle('editar-produto', (event, {id, campo, valor}) => {
 
 ipcMain.handle('listar-produto', () => {
   return new Promise((resolve, reject) => {
-    db.all("SELECT * FROM produtos", (err, rows) => {
+    db.all("SELECT * FROM produtos WHERE ativo = 1", (err, rows) => {
       if (err) reject(err);
       else resolve(rows);
     });
@@ -195,3 +200,48 @@ ipcMain.handle('listar-itens-pedido', (event, pedidoId) => {
     });
   });
 });
+
+
+function criarJanelaProduto() {
+  if (produtoWindow) {
+    produtoWindow.focus();
+    return;
+  }
+
+  produtoWindow = new BrowserWindow({
+    width: 400,
+    height: 500,
+
+    minWidth: 400,
+    minHeight: 500,
+    maxWidth: 400,
+    maxHeight: 500,
+
+    resizable: false, // trava o redimensionamento
+    parent: mainWindow,
+    modal: true,
+
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      sandbox: false,
+      contextIsolation: true
+    }
+  });
+
+  produtoWindow.loadFile(path.join(__dirname, 'src/adicionarProduto.html'));
+
+  produtoWindow.on('close', () => {
+    produtoWindow = null;
+    mainWindow.webContents.send("produto-adicionado");
+  })
+
+}
+
+ipcMain.handle('abrir-janela-produto', (event) => {
+  criarJanelaProduto();
+})
+
+ipcMain.handle('fechar-janela-produto', (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) win.close();
+})
