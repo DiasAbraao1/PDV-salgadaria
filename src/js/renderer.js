@@ -1,3 +1,4 @@
+
 // ===================== Index - pedidos ======================== //
 
 document.getElementById('open-btn').addEventListener('click', function(){
@@ -18,6 +19,8 @@ function loadPage(page) {
         carregarHistorico();
       } else if (page === "produtos") {
         renderizarListaProdutos();
+      } else if (page === 'dashboard') {
+        inicializarGrafico();
       }
     });
 }
@@ -281,8 +284,13 @@ document.addEventListener("click", (e) => {
 
   const btn = e.target.closest(".btn-remover");
   if (btn) {
-    const id = btn.dataset.id;
-    window.api.apagarProduto(Number(id));
+    if(confirm("Tem certeza que deseja apagar esse produto?")) {
+      const id = btn.dataset.id;
+      window.api.apagarProduto(Number(id));
+    } else {
+      return;
+    }
+    
   }
 });
 
@@ -301,3 +309,37 @@ window.api.produtoApagado(() => {
     renderizarListaProdutos();
   });
 });
+
+
+
+
+// ================================ Estatisticas =======================
+
+async function inicializarGrafico() {
+  const dados = await window.api.listarVendasHoje();
+
+  const labels = dados.map(d => d.hora + ':00');
+  const valores = dados.map(d => d.total);
+
+  const ctx = document.getElementById('grafico');
+
+  new Chart(ctx, {
+    type: 'bar', 
+    data: {
+      labels,
+      datasets: [{
+        label: 'Faturamento dos horarios (R$)',
+        data: valores,
+        fill: true,
+        tension: 0.3,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}

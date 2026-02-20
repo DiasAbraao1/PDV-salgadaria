@@ -62,4 +62,11 @@ contextBridge.exposeInMainWorld('api', {
     produtoApagado: (callback) => {
         ipcRenderer.on('produto-apagado', callback);
     },
+
+    listarVendasDia: () => ipcRenderer.invoke("listar-vendas-dia"),
+
+    // ========= JANELA DE ESTATISTICAS ================ 
+
+    listarVendasHoje: () => ipcRenderer.invoke("listar-vendas-hoje"),
+    
 });

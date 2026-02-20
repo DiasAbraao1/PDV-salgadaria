@@ -75,7 +75,6 @@ app.whenReady().then(() => {
 
   mainWindow.loadFile(path.join(__dirname, 'src/index.html'));
 
-
 });
 
 
@@ -126,7 +125,7 @@ ipcMain.handle("get-total-compra", () => {
 });
 
 
-ipcMain.handle('adicionar-pedido', (event, desconto, totalFinal, forma_pagamento, data) => {
+ipcMain.handle('adicionar-pedido', (event, desconto, totalFinal, forma_pagamento) => {
   return new Promise((resolve, reject) => {
 
     if (!vendaWindow || !vendaWindow.pedido) {
@@ -134,6 +133,8 @@ ipcMain.handle('adicionar-pedido', (event, desconto, totalFinal, forma_pagamento
     }
 
     const { total, itens } = vendaWindow.pedido;
+
+    const data = dataLocal();
 
     db.run(
       `INSERT INTO pedidos
@@ -245,3 +246,67 @@ ipcMain.handle('fechar-janela-produto', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win) win.close();
 })
+
+
+// ================ DASHBOARD ==============
+
+ipcMain.handle("listar-vendas-dia", () => {
+  return new Promise((resolve, reject) => {
+    db.all(`
+      SELECT 
+        DATE(criado_em) as dia,
+        SUM(total) as total
+      FROM pedidos
+      GROUP BY dia
+      ORDER BY dia
+    `, (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+});
+
+// ============================== historico ==============
+
+ipcMain.handle("listar-vendas-hoje", () => {
+  const hoje = dataHoje();
+
+  return new Promise((resolve, reject) => {
+    db.all(`
+      SELECT 
+        strftime('%H', criado_em) as hora,
+        SUM(total) as total
+      FROM pedidos
+      WHERE date(criado_em) = ?
+      GROUP BY hora
+      ORDER BY hora
+    `, [hoje], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+});
+
+function dataLocal() {
+  const d = new Date();
+
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mi = String(d.getMinutes()).padStart(2, '0');
+  const ss = String(d.getSeconds()).padStart(2, '0');
+
+  return `${yyyy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+}
+
+function dataHoje() {
+  const d = new Date();
+
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+
+  return `${yyyy}-${mm}-${dd}`;
+}
