@@ -21,6 +21,7 @@ function loadPage(page) {
         renderizarListaProdutos();
       } else if (page === 'dashboard') {
         inicializarGrafico();
+        renderizarFaturamento();
       }
     });
 }
@@ -97,7 +98,7 @@ function renderizarPedido() {
     preco.classList.add("preco");
 
     const btnRemover = document.createElement("button");
-    btnRemover.innerHTML = '<i class="fa-solid fa-trash"></i>'; // ícone simples
+    btnRemover.innerHTML = '<i class="fa-solid fa-trash"></i>'; 
     btnRemover.classList.add("btn-remover");
 
     btnRemover.addEventListener("click", () => {
@@ -150,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
     produtosCache = produtos;
     renderizarProdutos();
     renderizarListaProdutos();
+    carregarPedidos();
   });
 });
 
@@ -162,7 +164,7 @@ document.addEventListener("click", (e) => {
         itens: pedidoAtual
       });
     } else {
-      alert("Escolha algum prduto!");
+      alert("Escolha algum produto!");
     }
     
   }
@@ -171,6 +173,7 @@ document.addEventListener("click", (e) => {
 
 // ====================================== HISTORICO =============================================== //
 
+let listaPedidos = [];
 
 function renderizarHistorico() {
   const list = document.getElementById("lista-pedidos");
@@ -233,16 +236,12 @@ function formatarData(data) {
   return new Date(data).toLocaleString("pt-BR");
 }
 
-let listaPedidos = [];
-
 function carregarHistorico() {
   window.api.listarPedido().then(pedidos => {
     listaPedidos = pedidos;
     renderizarHistorico();
   });
 }
-
-
 
 
 // ============================ Produtos ===================================================//
@@ -343,3 +342,94 @@ async function inicializarGrafico() {
     }
   });
 }
+
+let Pedidos = [];
+
+async function renderizarFaturamento() {
+  const box = document.getElementById("historicos");
+  if (!box) return;
+
+  box.innerHTML = "";
+
+  const dados = await window.api.listarPagamentosHoje();
+
+  const totais = {
+    debito: 0,
+    credito: 0,
+    pix: 0,
+    dinheiro: 0,
+    outro: 0
+  };
+
+  let totalDia = 0;
+
+  dados.forEach(p => {
+    const tipo = p.forma_pagamento.toLowerCase();
+    const valor = Number(p.total) || 0;
+
+    if (totais[tipo] !== undefined) {
+      totais[tipo] += valor;   // soma corretamente
+    } else {
+      totais.outro += valor;   // fallback seguro
+    }
+
+    totalDia += valor;
+  });
+
+  box.innerHTML = `
+    <h3>Faturamento do dia</h3>
+
+    <div class="linha">
+      <span>Débito</span>
+      <strong>R$ ${totais.debito.toFixed(2)}</strong>
+    </div>
+
+    <div class="linha">
+      <span>Crédito</span>
+      <strong>R$ ${totais.credito.toFixed(2)}</strong>
+    </div>
+
+    <div class="linha">
+      <span>Pix</span>
+      <strong>R$ ${totais.pix.toFixed(2)}</strong>
+    </div>
+
+    <div class="linha">
+      <span>Dinheiro</span>
+      <strong>R$ ${totais.dinheiro.toFixed(2)}</strong>
+    </div>
+
+    <div class="linha">
+      <span>Outro</span>
+      <strong>R$ ${totais.outro.toFixed(2)}</strong>
+    </div>
+
+    <br><br>
+
+    <div class="total">
+      <span>Total do Dia:</span>
+      <strong> R$ ${totalDia.toFixed(2)} </strong>
+    </div>
+  `;
+}
+
+function carregarPedidos() {
+  window.api.listarPedido().then(pedidos => {
+    Pedidos = pedidos;
+  });
+}
+
+
+//==========================================
+
+const img = document.getElementById("user-avatar");
+const input = document.getElementById("foto");
+
+img.addEventListener('click', () => {
+  input.click();
+});
+
+input.addEventListener("change", () => {
+  const file = input.files[0];
+  if (file) img.src = URL.createObjectURL(file);
+});

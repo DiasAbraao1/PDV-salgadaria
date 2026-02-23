@@ -68,5 +68,7 @@ contextBridge.exposeInMainWorld('api', {
     // ========= JANELA DE ESTATISTICAS ================ 
 
     listarVendasHoje: () => ipcRenderer.invoke("listar-vendas-hoje"),
+
+    listarPagamentosHoje: () => ipcRenderer.invoke("listar-pagamentos-hoje"),
     
 });

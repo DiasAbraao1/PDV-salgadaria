@@ -287,6 +287,24 @@ ipcMain.handle("listar-vendas-hoje", () => {
   });
 });
 
+ipcMain.handle("listar-pagamentos-hoje", () => {
+  const hoje = dataHoje();
+
+  return new Promise((resolve, reject) => {
+    db.all(`
+      SELECT 
+        forma_pagamento,
+        SUM(total) as total
+      FROM pedidos
+      WHERE date(criado_em) = ?
+      GROUP BY forma_pagamento
+    `, [hoje], (err, rows) => {
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+});
+
 function dataLocal() {
   const d = new Date();
 
